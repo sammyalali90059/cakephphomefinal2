@@ -62,21 +62,4 @@ class ApiController extends AppController
     }
 }
 
-
-public function add()
-{
-    $this->request->allowMethod(['post', 'put']);
-    $recipe = $this->Recipes->newEntity($this->request->getData());
-    if ($this->Recipes->save($recipe)) {
-        $message = 'Saved';
-    } else {
-        $message = 'Error';
-    }
-    $this->set([
-        'message' => $message,
-        'recipe' => $recipe,
-    ]);
-    $this->viewBuilder()->setOption('serialize', ['recipe', 'message']);
-}
-
 }  
