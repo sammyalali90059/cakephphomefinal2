@@ -5,45 +5,62 @@ namespace App\Controller;
 use App\Model\Table\PetsTable;
 use Cake\Http\Response;
 use Cake\Http\ServerRequest;
+use Cake\Controller\Component\CsrfComponent;
 
 class ApiController extends AppController
 {
-    public function initialize()
+    public function beforeFilter(\Cake\Event\EventInterface $event)
     {
-        parent::initialize();
-        $this->loadComponent('RequestHandler');
+        parent::beforeFilter($event);
+        //$this->getEventManager()->off($this->Csrf);
+
+        // Configure the login action to not require authentication, preventing
+        // the infinite redirect loop issue
+       // $this->Authentication->addUnauthenticatedActions(['login', 'index', 'register']);
+        //$this->removeMiddleware(AuthenticationMiddleware::class);
+        $this->Authentication->addUnauthenticatedActions(['index', 'view', 'delete']);
+
+
     }
 
-    public function getPetsByUser($userId)
-    {
-        $petsTable = $this->getTableLocator()->get('Pets');
-        $pets = $petsTable->find()->where(['users_id' => $userId])->all();
-        $this->set(compact('pets'));
-        $this->set('_serialize', 'pets');
-    }
 
-    public function deletePet($petId)
-    {
-        $petsTable = $this->getTableLocator()->get('Pets');
-        $pet = $petsTable->get($petId);
-        $petsTable->delete($pet);
-        $response = new Response();
-        $response = $response->withStatus(204);
-        return $response;
-    }
 
-    public function addPet() {
-      $petsTable = $this->fetchTable("pets");
-      $pet = $petsTable->newEntity();
-      if ($this->request->is('post')) {
-          $pet = $petsTable->patchEntity($pet, $this->request->getData());
-          $pet->users_id = $this->Auth->user('id');
-          if ($petsTable->save($pet)) {
-              $this->set(compact('pet'));
-              $this->set('_serialize', ['pet']);
-          } else {
-              throw new BadRequestException("Could not save pet.");
-          }
-      }
-  }
+        public function view($user_id) {
+            $petsTable = $this->fetchTable("pets");
+            $pets = $petsTable->find()->where(['users_id' => $user_id])->all();
+            if ($pets) {
+                $this->set(compact('pets'));
+                $this->set('_serialize', ['pets']);
+                $this->viewBuilder()->setOption('serialize', ['pets']);
+            } else {
+                $message = 'Pets not found';
+                $this->set(compact('message'));
+                $this->set('_serialize', ['message']);
+            }
+        }
+        
+        public function delete($id)
+{
+    $petsTable = $this->fetchTable("pets");
+    $pet = $petsTable->get($id);
+    if (!$pet) {
+        $this->set([
+            'message' => 'Pet not found',
+            '_serialize' => ['message']
+        ]);
+        return;
+    }
+    if ($petsTable->delete($pet)) {
+        $this->set([
+            'message' => 'Pet deleted',
+            '_serialize' => ['message']
+        ]);
+    } else {
+        $this->set([
+            'message' => 'Error deleting pet',
+            '_serialize' => ['message']
+        ]);
+    }
+}
+
 }  
