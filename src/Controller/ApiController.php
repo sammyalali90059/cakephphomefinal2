@@ -16,9 +16,8 @@ class ApiController extends AppController
 
         // Configure the login action to not require authentication, preventing
         // the infinite redirect loop issue
-       // $this->Authentication->addUnauthenticatedActions(['login', 'index', 'register']);
+       $this->Authentication->addUnauthenticatedActions(['view', 'delete', 'add']);
         //$this->removeMiddleware(AuthenticationMiddleware::class);
-        $this->Authentication->addUnauthenticatedActions(['index', 'view', 'delete']);
 
 
     }
@@ -61,6 +60,23 @@ class ApiController extends AppController
             '_serialize' => ['message']
         ]);
     }
+}
+
+
+public function add()
+{
+    $this->request->allowMethod(['post', 'put']);
+    $recipe = $this->Recipes->newEntity($this->request->getData());
+    if ($this->Recipes->save($recipe)) {
+        $message = 'Saved';
+    } else {
+        $message = 'Error';
+    }
+    $this->set([
+        'message' => $message,
+        'recipe' => $recipe,
+    ]);
+    $this->viewBuilder()->setOption('serialize', ['recipe', 'message']);
 }
 
 }  

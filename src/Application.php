@@ -103,14 +103,17 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // https://book.cakephp.org/4/en/controllers/middleware.html#body-parser-middleware
             ->add(new BodyParserMiddleware())
 
-            ->add(new AuthenticationMiddleware($this))
+            ->add(new AuthenticationMiddleware($this));
 
             // Cross Site Request Forgery (CSRF) Protection Middleware
             // https://book.cakephp.org/4/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
+            /*
             ->add(new CsrfProtectionMiddleware([
                 'httponly' => true,
-                'skipControllers' => ['Api']
+                'skipControllers' => ['Api'],
+                'skipActions' => ['getPetsByUser', 'delete', 'addPet']
             ]));
+            */
 
         return $middlewareQueue;
     }
